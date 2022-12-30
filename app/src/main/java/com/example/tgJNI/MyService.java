@@ -68,7 +68,7 @@ public class MyService extends Service {
             }
         }).start();
 
-        int interval = 5 * 1000; //1s一条进行计算
+        int interval = 10 * 1000 * 60; //10分钟进行一次
         AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
         long triggerTime = SystemClock.elapsedRealtime() + interval; //系统开机到现在的毫秒数+延迟执行时间
         Intent i = new Intent(this, MyService.class);

@@ -33,12 +33,12 @@ jobject getJavaByteBuffer(JNIEnv *env, jclass c, jlong address) {
     }
     return buffer->getJavaByteBuffer();
 }
-void setJava(JNIEnv *env, jclass c, jboolean useJavaByteBuffers) {
-    ConnectionsManager::useJavaVM(java, useJavaByteBuffers);
-}
+//void setJava(JNIEnv *env, jclass c, jboolean useJavaByteBuffers) {
+//    ConnectionsManager::useJavaVM(java, useJavaByteBuffers);
+//}
 static const char *NativeByteBufferClassPathName = "com/example/tgJNI/tgnet/NativeByteBuffer";
 static JNINativeMethod NativeByteBufferMethods[] = {
-        {"native_setJava", "(Z)V", (void *) setJava},
+//        {"native_setJava", "(Z)V", (void *) setJava},
         {"native_getFreeBuffer", "(I)J", (void *) getFreeBuffer},
         {"native_limit", "(J)I", (void *) limit},
         {"native_position", "(J)I", (void *) position},
@@ -46,6 +46,14 @@ static JNINativeMethod NativeByteBufferMethods[] = {
         {"native_getJavaByteBuffer", "(J)Ljava/nio/ByteBuffer;", (void *) getJavaByteBuffer}
 };
 
+void setJava(JNIEnv *env, jclass c, jboolean useJavaByteBuffers) {
+    ConnectionsManager::useJavaVM(java, useJavaByteBuffers);
+}
+
+static const char *ConnectionsManagerClassPathName = "com/example/tgJNI/tgnet/ConnectionsManager";
+static JNINativeMethod ConnectionsManagerMethods[] = {
+        {"native_setJava", "(Z)V", (void *) setJava},
+};
 
 
 
@@ -65,6 +73,9 @@ extern "C" int registerNativeTgNetFunctions(JavaVM *vm, JNIEnv *env) {
     java = vm;
 
     if (!registerNativeMethods(env, NativeByteBufferClassPathName, NativeByteBufferMethods, sizeof(NativeByteBufferMethods) / sizeof(NativeByteBufferMethods[0]))) {
+        return JNI_FALSE;
+    }
+    if (!registerNativeMethods(env, ConnectionsManagerClassPathName, ConnectionsManagerMethods, sizeof(ConnectionsManagerMethods) / sizeof(ConnectionsManagerMethods[0]))) {
         return JNI_FALSE;
     }
 

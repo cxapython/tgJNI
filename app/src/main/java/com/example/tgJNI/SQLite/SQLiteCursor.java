@@ -8,20 +8,75 @@
 
 package com.example.tgJNI.SQLite;
 import com.example.tgJNI.tgnet.NativeByteBuffer;
-
 public class SQLiteCursor {
+
 	public static final int FIELD_TYPE_INT = 1;
 	public static final int FIELD_TYPE_FLOAT = 2;
 	public static final int FIELD_TYPE_STRING = 3;
 	public static final int FIELD_TYPE_BYTEARRAY = 4;
 	public static final int FIELD_TYPE_NULL = 5;
+
+	private SQLitePreparedStatement preparedStatement;
+	private boolean inRow = false;
+
+	public SQLiteCursor(SQLitePreparedStatement stmt) {
+		preparedStatement = stmt;
+	}
+
+	public boolean isNull(int columnIndex) throws SQLiteException {
+		checkRow();
+		return columnIsNull(preparedStatement.getStatementHandle(), columnIndex) == 1;
+	}
+
+	public SQLitePreparedStatement getPreparedStatement() {
+		return preparedStatement;
+	}
+
+	public int intValue(int columnIndex) throws SQLiteException {
+		checkRow();
+		return columnIntValue(preparedStatement.getStatementHandle(), columnIndex);
+	}
+
+	public double doubleValue(int columnIndex) throws SQLiteException {
+		checkRow();
+		return columnDoubleValue(preparedStatement.getStatementHandle(), columnIndex);
+	}
+
+	public long longValue(int columnIndex) throws SQLiteException {
+		checkRow();
+		return columnLongValue(preparedStatement.getStatementHandle(), columnIndex);
+	}
+
+	public String stringValue(int columnIndex) throws SQLiteException {
+		checkRow();
+		return columnStringValue(preparedStatement.getStatementHandle(), columnIndex);
+	}
+
+	public byte[] byteArrayValue(int columnIndex) throws SQLiteException {
+		checkRow();
+		return columnByteArrayValue(preparedStatement.getStatementHandle(), columnIndex);
+	}
+
+	public NativeByteBuffer byteBufferValue(int columnIndex) throws SQLiteException {
+		checkRow();
+		long ptr = columnByteBufferValue(preparedStatement.getStatementHandle(), columnIndex);
+		if (ptr != 0) {
+			return NativeByteBuffer.wrap(ptr);
+		}
+		return null;
+	}
+
+	public int getTypeOf(int columnIndex) throws SQLiteException {
+		checkRow();
+		return columnType(preparedStatement.getStatementHandle(), columnIndex);
+	}
+
 	public boolean next() throws SQLiteException {
 		int res = preparedStatement.step(preparedStatement.getStatementHandle());
 		if (res == -1) {
 			int repeatCount = 6;
 			while (repeatCount-- != 0) {
 				try {
-
 					Thread.sleep(500);
 					res = preparedStatement.step();
 					if (res == 0) {
@@ -37,27 +92,32 @@ public class SQLiteCursor {
 		inRow = (res == 0);
 		return inRow;
 	}
-	private SQLitePreparedStatement preparedStatement;
-	private boolean inRow = false;
 
-	public SQLiteCursor(SQLitePreparedStatement stmt) {
-		preparedStatement = stmt;
+	public long getStatementHandle() {
+		return preparedStatement.getStatementHandle();
 	}
+
+	public int getColumnCount() {
+		return columnCount(preparedStatement.getStatementHandle());
+	}
+
 	public void dispose() {
 		preparedStatement.dispose();
 	}
-	public long longValue(int columnIndex) throws SQLiteException {
-		return columnLongValue(preparedStatement.getStatementHandle(), columnIndex);
-	}
-	public NativeByteBuffer byteBufferValue(int columnIndex) throws SQLiteException {
-		long ptr = columnByteBufferValue(preparedStatement.getStatementHandle(), columnIndex);
-		if (ptr != 0) {
-			return NativeByteBuffer.wrap(ptr);
+
+	void checkRow() throws SQLiteException {
+		if (!inRow) {
+			throw new SQLiteException("You must call next before");
 		}
-		return null;
 	}
 
+	native int columnType(long statementHandle, int columnIndex);
+	native int columnCount(long statementHandle);
+	native int columnIsNull(long statementHandle, int columnIndex);
+	native int columnIntValue(long statementHandle, int columnIndex);
 	native long columnLongValue(long statementHandle, int columnIndex);
-
+	native double columnDoubleValue(long statementHandle, int columnIndex);
+	native String columnStringValue(long statementHandle, int columnIndex);
+	native byte[] columnByteArrayValue(long statementHandle, int columnIndex);
 	native long columnByteBufferValue(long statementHandle, int columnIndex);
 }

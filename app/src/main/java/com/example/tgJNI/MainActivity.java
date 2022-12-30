@@ -50,11 +50,12 @@ public class MainActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_PERMISSION_CODE);
             }
         }
-        String path = DB_DIR_PATH + "/" + DB_FILE_NAME;
-        DecryptUtiles.execRootCmd("chmod 777 -R /data/data/org.telegram.messenger.web");
-        copyFile(path,copyFilePath);
-
-        DecryptUtiles.execRootCmd("chmod 777 -R "+copyFilePath);
+        //这部分是copy，后面测试完再放开
+//        String path = DB_DIR_PATH + "/" + DB_FILE_NAME;
+//        DecryptUtiles.execRootCmd("chmod 777 -R /data/data/org.telegram.messenger.web");
+//        copyFile(path,copyFilePath);
+//
+//        DecryptUtiles.execRootCmd("chmod 777 -R "+copyFilePath);
 
         Intent intentOne = new Intent(this, MyService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
